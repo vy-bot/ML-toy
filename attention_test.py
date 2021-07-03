@@ -22,11 +22,11 @@ scriptDir = os.path.dirname(os.path.realpath(__file__))
 import random
 
 def main():
-    stepsLookback = 30
+    stepsLookback = 100
     stepsPredict = 1
     predictCol='close'
 
-    predictThisTicker='SPY'
+    predictThisTicker='SPY'.upper()
 
     tickers = predictThisTicker
     tickers += ',SPY,RIOT,FSLR,VIAC,GNRC,MRIN,PLTR,TLRY,CLNE,CAT,XYF,ORCL,XPEV,TRCH,SPY,RAIL,NVDA,MSFT,TSLA,AMD,WFC,INTC,NET,CCL,MO,VTI,VOO,IVV,SWPPX,GLD,FNILX,VZ,F,GME,AMC,CLOV,AMZN,AAPL,GOOG,'
@@ -47,13 +47,13 @@ def main():
     model, scaler_tic, scaler_tiy, scaler_vol = '','','',''
 
     if len(tickers)==1:
-        model_path = f"{scriptDir}\\lstm.{predictThisTicker}-{stepsLookback}-{stepsPredict}.h5"
-        scaler_path = f"{scriptDir}\\lstm.{predictThisTicker}-{stepsLookback}-{stepsPredict}.scaler"
-        img_path = f"{scriptDir}\\lstm.{predictThisTicker}-{stepsLookback}-{stepsPredict}.png"
+        model_path = f"{scriptDir}\\lstm.{predictThisTicker}-{stepsLookback}-{stepsPredict}-{predictCol}.h5"
+        scaler_path = f"{scriptDir}\\lstm.{predictThisTicker}-{stepsLookback}-{stepsPredict}-{predictCol}.scaler"
+        img_path = f"{scriptDir}\\lstm.{predictThisTicker}-{stepsLookback}-{stepsPredict}-{predictCol}.png"
     else:
-        model_path = f"{scriptDir}\\lstm{len(tickers)}.{stepsLookback}-{stepsPredict}.h5"
-        scaler_path = f"{scriptDir}\\lstm{len(tickers)}.{stepsLookback}-{stepsPredict}.scaler"
-        img_path = f"{scriptDir}\\lstm{len(tickers)}.{stepsLookback}-{stepsPredict}.png"
+        model_path = f"{scriptDir}\\lstm{len(tickers)}.{stepsLookback}-{stepsPredict}-{predictCol}.h5"
+        scaler_path = f"{scriptDir}\\lstm{len(tickers)}.{stepsLookback}-{stepsPredict}-{predictCol}.scaler"
+        img_path = f"{scriptDir}\\lstm{len(tickers)}.{stepsLookback}-{stepsPredict}-{predictCol}.png"
 
 
     if os.path.exists(model_path) and os.path.getsize(model_path)>1:
@@ -124,6 +124,7 @@ def main():
 
         #model.fit(data_x, data_y, epochs=stepsLookback+stepsPredict*5)
         model.fit(data_x, data_y, epochs=30, batch_size=len(tickers), callbacks=[callback])
+        #model.fit(data_x, data_y, epochs=30, batch_size=50, callbacks=[callback])
         
         # save
         model.save(model_path)
@@ -152,7 +153,7 @@ def main():
     # predict
     pred = model.predict(data_x)
     pred = scaler_tiy.inverse_transform(pred)
-    futureW=np.concatenate([dat[-1*graphWidth-stepsPredict:]['close'].values, pred[0]])
+    futureW=np.concatenate([dat[-1*graphWidth-stepsPredict:][predictCol].values, pred[0]])
 
 
 
@@ -176,7 +177,7 @@ def main():
     # predict
     pred = model.predict(data_x)
     pred = scaler_tiy.inverse_transform(pred)
-    future = np.concatenate([dat[-1*graphWidth-stepsPredict:-1*offset]['close'].values, pred[0]])
+    future = np.concatenate([dat[-1*graphWidth-stepsPredict:-1*offset][predictCol].values, pred[0]])
     #future = future[-1 * (stepsLookback * graphWidthMultiplier - stepsPredict):]
 
 
